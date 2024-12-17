@@ -1,4 +1,4 @@
-from minio import minio
+from minio import Minio
 import os
 import logging
 
