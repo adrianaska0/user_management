@@ -1,5 +1,5 @@
 from builtins import ValueError, any, bool, str
-from pydantic import BaseModel, EmailStr, Field, validator, root_validator
+from pydantic import BaseModel, EmailStr, Field, validator, root_validator, HttpUrl, AnyUrl
 from typing import Optional, List
 from datetime import datetime
 from enum import Enum
@@ -81,3 +81,21 @@ class UserListResponse(BaseModel):
     total: int = Field(..., example=100)
     page: int = Field(..., example=1)
     size: int = Field(..., example=10)
+
+class UploadProfilePicResponse(BaseModel):
+    message: str
+    profile_picture_url: AnyUrl
+
+    @validator('profile_picture_url')
+    def allow_minio_scheme(cls, v):
+        if v.scheme not in ['http', 'https', 'minio']:
+            raise ValueError("URL scheme should be 'http', 'https' or 'minio'")
+        return v
+
+    class Config:
+        schema_extra = {
+            "example": {
+                "message": "Profile picture uploaded successfully",
+                "profile_picture_url": "http://example.com/profiles/test_image.jpg",
+            }
+        }
