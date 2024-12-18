@@ -16,6 +16,8 @@ Since object-oriented design emulates to real-world concepts, it is considered a
 
 The value and knowledge gained from this project and this course is useful because it exposes students to the some of the gaps in knowledge that exist even after completing an undergraduate degree in a related field. The knowledge jump from school to industry is significant and this exposure definitely aids in that effort.
 
+## Feature
+[User Profile Picture Uploading with MinIO](https://github.com/adrianaska0/user_management/blob/main/app/routers/user_routes.py)
 
 ## Tests
 [Minio Tests](https://github.com/adrianaska0/user_management/blob/main/tests/test_minio.py)
