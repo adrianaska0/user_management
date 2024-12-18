@@ -205,6 +205,7 @@ async def test_upload_profile_pic_success(mock_update, mock_get_by_email, mock_g
     mock_get_current_user.return_value = {"user_id": "user@example.com"}
     mock_get_by_email.return_value = MagicMock(id="123")
     mock_get_client.return_value = MagicMock()
+    mock_upload_image.return_value = "minio:9000/profiles/test_image.jpg"
 
     headers = {"Authorization": f"Bearer {user_token}"}
     files = {"file": ("test_image.jpg", b"fake_image_data", "image/jpeg")}
@@ -227,6 +228,9 @@ async def test_upload_profile_pic_user_not_found(mock_get_by_email, mock_get_db,
     headers = {"Authorization": f"Bearer {user_token}"}
     files = {"file": ("test_image.jpg", b"fake_image_data", "image/jpeg")}
     response = await async_client.post("/users/me/upload-profile-picture", headers=headers, files=files)
+
+    logger.info(f"Response status code: {response.status_code}")
+    logger.info(f"Response content: {response.text}")
 
     assert response.status_code == status.HTTP_404_NOT_FOUND
 
