@@ -32,6 +32,8 @@ The value and knowledge gained from this project and this course is useful becau
 [NameError in Profile Pic Test](https://github.com/adrianaska0/user_management/issues/6)
 <br/><br/>
 [User Profile Pic Endpoint Missing Response Model](https://github.com/adrianaska0/user_management/issues/8)
+<br/><br/>
+[Delete User Endpoint Missing Response Model](https://github.com/adrianaska0/user_management/issues/10)
 
 ## Docker
 [User Management Repo (Docker)](https://hub.docker.com/repository/docker/adrianaska0/user_management/general)
