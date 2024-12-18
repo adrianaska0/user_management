@@ -280,13 +280,7 @@ async def test_upload_profile_pic_file_system_error(mock_open, mock_get_by_email
     headers = {"Authorization": f"Bearer {user_token}"}
     files = {"file": ("test_image.jpg", b"fake_image_data", "image/jpeg")}
     
-    try:
-        # Call the endpoint
-        response = await async_client.post("/users/me/upload-profile-picture", headers=headers, files=files)
-    except Exception as e:
-        # Catch the exception and assert the failure result
-        response = e
-    
-    # Assert the result
-    assert isinstance(response, Exception)
-    assert str(response) == "File system error"
+    response = await async_client.post("/users/me/upload-profile-picture", headers=headers, files=files)
+
+    assert response.status_code == 500
+    assert "File system error" in response.text
