@@ -1,3 +1,7 @@
+# User Management (Final Project)
+
+## Reflection
+
 Throughout this course, I was exposed to many useful software development tools and techniques actively used in the industry. These encompassed aspects of the Twelve-Factor App methodology that allow production-grade applications to be scalable, portable, and maintainable.
 
 In this course we explored source control best practices and environment configurations. These are essential to working collaboratively on a project with other developers and testers. This was also pertinent for keeping a clean and working production environment that can be deployed via a CI/CD pipeline.
@@ -11,3 +15,8 @@ Perhaps one of the most important parts of this course as far as code structure 
 Since object-oriented design emulates to real-world concepts, it is considered a reasonable way to organize a program, keeping all related data and operations together and abstracting implementation from other parts of the program. This, combined with sufficient logging streamlines the debugging process across an application.
 
 The value and knowledge gained from this project and this course is useful because it exposes students to the some of the gaps in knowledge that exist even after completing an undergraduate degree in a related field. The knowledge jump from school to industry is significant and this exposure definitely aids in that effort.
+
+
+## Tests
+[Minio Tests](https://github.com/adrianaska0/user_management/blob/main/tests/test_minio.py)
+[Upload User Profile Picture Tests](https://github.com/adrianaska0/user_management/blob/main/tests/test_api/test_users_api.py)
