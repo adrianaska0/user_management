@@ -9,6 +9,7 @@ from app.services.jwt_service import decode_token  # Import your FastAPI app
 from fastapi.testclient import TestClient
 from unittest.mock import patch, MagicMock
 from fastapi import status
+import logging
 
 # Example of a test function using the async_client fixture
 @pytest.mark.asyncio
@@ -229,8 +230,8 @@ async def test_upload_profile_pic_user_not_found(mock_get_by_email, mock_get_db,
     files = {"file": ("test_image.jpg", b"fake_image_data", "image/jpeg")}
     response = await async_client.post("/users/me/upload-profile-picture", headers=headers, files=files)
 
-    logger.info(f"Response status code: {response.status_code}")
-    logger.info(f"Response content: {response.text}")
+    logging.debug(f"Response status code: {response.status_code}")
+    logging.debug(f"Response content: {response.text}")
 
     assert response.status_code == status.HTTP_404_NOT_FOUND
 
