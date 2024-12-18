@@ -283,7 +283,7 @@ async def upload_profile_pic(
         client = getClient()
         uploadImage(client, temp_path, file.filename)
 
-        minio_url = os.getenv("MINIO_URL", "http://localhost:9000")
+        minio_url = os.getenv("MINIO_URL")
         profile_picture_url = f"{minio_url}/profiles/{file.filename}"
         logging.debug(f"Profile picture URL: {profile_picture_url}")
 

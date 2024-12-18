@@ -15,7 +15,7 @@ def getClient ():
 def createBucket (client):
     found = client.bucket_exists("profiles")
     if not found:
-        client.make_bucker("profiles")
+        client.make_bucket("profiles")
         logging.info("Bucket 'profiles' created.")
     else:
         logging.info("Bucket 'profiles' already exists.")
