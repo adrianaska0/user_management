@@ -6,6 +6,9 @@ from app.models.user_model import User, UserRole
 from app.utils.nickname_gen import generate_nickname
 from app.utils.security import hash_password
 from app.services.jwt_service import decode_token  # Import your FastAPI app
+from fastapi.testclient import TestClient
+from unittest.mock import patch, MagicMock
+from fastapi import status
 
 # Example of a test function using the async_client fixture
 @pytest.mark.asyncio
@@ -190,3 +193,100 @@ async def test_list_users_unauthorized(async_client, user_token):
         headers={"Authorization": f"Bearer {user_token}"}
     )
     assert response.status_code == 403  # Forbidden, as expected for regular user
+
+@pytest.mark.asyncio
+@patch('app.utils.minio.getClient')
+@patch('app.utils.minio.uploadImage')
+@patch('app.dependencies.get_current_user')
+@patch('app.dependencies.get_db')
+@patch('app.services.user_service.UserService.get_by_email')
+@patch('app.services.user_service.UserService.update')
+async def test_upload_profile_pic_success(mock_update, mock_get_by_email, mock_get_db, mock_get_current_user, mock_upload_image, mock_get_client, async_client: AsyncClient, user_token):
+    mock_get_current_user.return_value = {"user_id": "user@example.com"}
+    mock_get_by_email.return_value = MagicMock(id="123")
+    mock_get_client.return_value = MagicMock()
+
+    headers = {"Authorization": f"Bearer {user_token}"}
+    files = {"file": ("test_image.jpg", b"fake_image_data", "image/jpeg")}
+    response = await async_client.post("/users/me/upload-profile-picture", headers=headers, files=files)
+
+    assert response.status_code == status.HTTP_200_OK
+    assert response.json() == {
+        "message": "Profile picture uploaded successfully",
+        "profile_picture_url": "minio:9000/profiles/test_image.jpg"
+    }
+
+@pytest.mark.asyncio
+@patch('app.dependencies.get_current_user')
+@patch('app.dependencies.get_db')
+@patch('app.services.user_service.UserService.get_by_email')
+async def test_upload_profile_pic_user_not_found(mock_get_by_email, mock_get_db, mock_get_current_user, async_client: AsyncClient, user_token):
+    mock_get_current_user.return_value = {"user_id": "nonexistent_user@example.com"}
+    mock_get_by_email.return_value = None
+
+    headers = {"Authorization": f"Bearer {user_token}"}
+    files = {"file": ("test_image.jpg", b"fake_image_data", "image/jpeg")}
+    response = await async_client.post("/users/me/upload-profile-picture", headers=headers, files=files)
+
+    assert response.status_code == status.HTTP_404_NOT_FOUND
+
+@pytest.mark.asyncio
+@patch('app.dependencies.get_current_user')
+@patch('app.dependencies.get_db')
+@patch('app.services.user_service.UserService.get_by_email')
+async def test_upload_profile_pic_invalid_file_type(mock_get_by_email, mock_get_db, mock_get_current_user, async_client: AsyncClient, user_token):
+    mock_get_current_user.return_value = {"user_id": "user@example.com"}
+    mock_get_by_email.return_value = MagicMock(id="123")
+
+    headers = {"Authorization": f"Bearer {user_token}"}
+    files = {"file": ("test_image.gif", b"fake_image_data", "image/gif")}
+    response = await async_client.post("/users/me/upload-profile-picture", headers=headers, files=files)
+
+    assert response.status_code == status.HTTP_400_BAD_REQUEST
+    assert response.json() == {"detail": "Invalid file type. Only jpeg and png accepted."}
+
+@pytest.mark.asyncio
+@patch('app.utils.minio.getClient')
+@patch('app.utils.minio.uploadImage')
+@patch('app.dependencies.get_current_user')
+@patch('app.dependencies.get_db')
+@patch('app.services.user_service.UserService.get_by_email')
+@patch('app.services.user_service.UserService.update')
+async def test_upload_profile_pic_db_update_failure(mock_update, mock_get_by_email, mock_get_db, mock_get_current_user, mock_upload_image, mock_get_client, async_client: AsyncClient, user_token):
+    mock_get_current_user.return_value = {"user_id": "user@example.com"}
+    mock_get_by_email.return_value = MagicMock(id="123")
+    mock_get_client.return_value = MagicMock()
+    mock_update.side_effect = Exception("DB update failed")
+
+    headers = {"Authorization": f"Bearer {user_token}"}
+    files = {"file": ("test_image.jpg", b"fake_image_data", "image/jpeg")}
+    response = await async_client.post("/users/me/upload-profile-picture", headers=headers, files=files)
+
+    assert response.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
+    assert response.json() == {"detail": "DB update failed"}
+
+@pytest.mark.asyncio
+@patch('app.utils.minio.getClient')
+@patch('app.utils.minio.uploadImage')
+@patch('app.dependencies.get_current_user')
+@patch('app.dependencies.get_db')
+@patch('app.services.user_service.UserService.get_by_email')
+@patch('builtins.open', side_effect=Exception("File system error"))
+async def test_upload_profile_pic_file_system_error(mock_open, mock_get_by_email, mock_get_db, mock_get_current_user, mock_upload_image, mock_get_client, async_client: AsyncClient, user_token):
+    mock_get_current_user.return_value = {"user_id": "user@example.com"}
+    mock_get_by_email.return_value = MagicMock(id="123")
+    mock_get_client.return_value = MagicMock()
+
+    headers = {"Authorization": f"Bearer {user_token}"}
+    files = {"file": ("test_image.jpg", b"fake_image_data", "image/jpeg")}
+    
+    try:
+        # Call the endpoint
+        response = await async_client.post("/users/me/upload-profile-picture", headers=headers, files=files)
+    except Exception as e:
+        # Catch the exception and assert the failure result
+        response = e
+    
+    # Assert the result
+    assert isinstance(response, Exception)
+    assert str(response) == "File system error"
