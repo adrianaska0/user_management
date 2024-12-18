@@ -99,3 +99,6 @@ class UploadProfilePicResponse(BaseModel):
                 "profile_picture_url": "http://example.com/profiles/test_image.jpg",
             }
         }
+
+class DeleteUserResponse(BaseModel):
+    message: str = Field(..., example="User deleted successfully")
