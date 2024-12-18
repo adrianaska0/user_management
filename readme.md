@@ -24,5 +24,10 @@ The value and knowledge gained from this project and this course is useful becau
 
 ## Issues
 [Profile Picture Endpoint](https://github.com/adrianaska0/user_management/issues/1)
-
+<br></br>
 [Upload Profile Pic Error (Workflow)](https://github.com/adrianaska0/user_management/issues/3)
+<br></br>
+[NameError in Profile Pic Test](https://github.com/adrianaska0/user_management/issues/6)
+
+## Docker
+[User Management Repo (Docker)](https://hub.docker.com/repository/docker/adrianaska0/user_management/general)
