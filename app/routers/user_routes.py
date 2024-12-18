@@ -28,7 +28,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.dependencies import get_current_user, get_db, get_email_service, require_role
 from app.schemas.pagination_schema import EnhancedPagination
 from app.schemas.token_schema import TokenResponse
-from app.schemas.user_schemas import LoginRequest, UserBase, UserCreate, UserListResponse, UserResponse, UserUpdate, UploadProfilePicResponse
+from app.schemas.user_schemas import LoginRequest, UserBase, UserCreate, UserListResponse, UserResponse, UserUpdate, UploadProfilePicResponse, DeleteUserResponse
 from app.services.user_service import UserService
 from app.services.jwt_service import create_access_token
 from app.utils.link_generation import create_user_links, generate_pagination_links
@@ -114,8 +114,13 @@ async def update_user(user_id: UUID, user_update: UserUpdate, request: Request, 
     )
 
 
-@router.delete("/users/{user_id}", status_code=status.HTTP_204_NO_CONTENT, name="delete_user", tags=["User Management Requires (Admin or Manager Roles)"])
-async def delete_user(user_id: UUID, db: AsyncSession = Depends(get_db), token: str = Depends(oauth2_scheme), current_user: dict = Depends(require_role(["ADMIN", "MANAGER"]))):
+@router.delete("/users/{user_id}", response_model=DeleteUserResponse, status_code=status.HTTP_200_OK, name="delete_user", tags=["User Management Requires (Admin or Manager Roles)"])
+async def delete_user(
+    user_id: UUID, 
+    db: AsyncSession = Depends(get_db), 
+    token: str = Depends(oauth2_scheme), 
+    current_user: dict = Depends(require_role(["ADMIN", "MANAGER"]))
+):
     """
     Delete a user by their ID.
 
@@ -124,6 +129,7 @@ async def delete_user(user_id: UUID, db: AsyncSession = Depends(get_db), token: 
     success = await UserService.delete(db, user_id)
     if not success:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+    
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
