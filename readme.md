@@ -19,4 +19,5 @@ The value and knowledge gained from this project and this course is useful becau
 
 ## Tests
 [Minio Tests](https://github.com/adrianaska0/user_management/blob/main/tests/test_minio.py)
+<br/><br/>
 [Upload User Profile Picture Tests](https://github.com/adrianaska0/user_management/blob/main/tests/test_api/test_users_api.py)
