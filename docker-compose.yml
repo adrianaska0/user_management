@@ -42,9 +42,9 @@ services:
     networks:
       - app-network
     environment:
-      MINIO_URL: http://minio:9000
-      MINIO_ACCESS_KEY: u5ODd68aboNGfqh9U3jx
-      MINIO_SECRET_KEY: UC5ACGQQlf5kDuTCvu0loZnMZEeRmyQIMnVeDYfH
+      MINIO_URL: minio:9000
+      MINIO_ACCESS_KEY: SEYNQEv1ImC8xg01Dxt4
+      MINIO_SECRET_KEY: Zszwj2uSLGFksgJxRsO36faVsniUfxSwykS9InIc
 
   nginx:
     image: nginx:latest

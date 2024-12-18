@@ -19,6 +19,7 @@ Key Highlights:
 """
 
 from builtins import dict, int, len, str
+import logging
 from datetime import timedelta
 from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, Response, status, Request, UploadFile, File
@@ -251,29 +252,50 @@ async def verify_email(user_id: UUID, token: str, db: AsyncSession = Depends(get
     raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid or expired verification token")
 
 @router.post("/users/me/upload-profile-picture", name="upload_profile_pic", tags=["User Profile"])
-async def upload_profile_pic(file: UploadFile = File(...), db: AsyncSession = Depends(get_db), token: str = Depends(oauth2_scheme), current_user: dict = Depends(get_current_user)):
+async def upload_profile_pic(
+    file: UploadFile = File(...), 
+    db: AsyncSession = Depends(get_db), 
+    token: str = Depends(oauth2_scheme), 
+    current_user: dict = Depends(get_current_user)
+):
     """
     Upload profile picture for current user.
 
     - **file**: Profile picture to be uploaded
     """
-    user = await UserService.get_by_id(db, current_user.user_id)
+    logging.debug(f"Received request to upload profile picture for user: {current_user['user_id']}")
+
+    user = await UserService.get_by_email(db, current_user["user_id"])
     if not user:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"User not found {current_user['user_id']}")
 
     if file.content_type not in ["image/jpeg", "image/png"]:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid file type. Only jpeg and png accepted.")
 
     temp_path = f"/tmp/{user.id}_{file.filename}"
+    logging.debug(f"Temporary path for upload: {temp_path}")
 
-    with open(temp_path, "wb") as temp_file:
-        shutil.copyfileobj(file.file, temp_file)
+    try:
+        with open(temp_path, "wb") as temp_file:
+            shutil.copyfileobj(file.file, temp_file)
 
-    client = getClient()
-    uploadImage(client, temp_path, file.filename)
+        # Upload image
+        client = getClient()
+        uploadImage(client, temp_path, file.filename)
 
-    os.remove(temp_path)
-    profile_picture_url = f"{os.getenv("MINIO_URL")}/profiles/{file.filename}"
-    await UserService.update(db, user.id, {"profile_picutre_url": profile_picture_url})
+        minio_url = os.getenv("MINIO_URL", "http://localhost:9000")
+        profile_picture_url = f"{minio_url}/profiles/{file.filename}"
+        logging.debug(f"Profile picture URL: {profile_picture_url}")
 
-    return {"message": "Profile picture uploaded successfully", "profile_picture_url": profile_picture_url}
+        # Update db
+        await UserService.update(db, user.id, {"profile_picture_url": profile_picture_url})
+
+        os.remove(temp_path)
+
+        return {"message": "Profile picture uploaded successfully", "profile_picture_url": profile_picture_url}
+    
+    except Exception as e:
+        # Clean up in case of error
+        if os.path.exists(temp_path):
+            os.remove(temp_path)
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))

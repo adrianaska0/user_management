@@ -1,4 +1,5 @@
 from minio import Minio
+from minio.error import S3Error
 import os
 import logging
 
@@ -22,13 +23,11 @@ def createBucket (client):
 def uploadImage (client, image_path, image_name):
     try:
         createBucket(client)
-
-        with open(image_path, 'rb') as image_file:
-            client.fput_object(
-                "profiles",
-                image_name,
-                image_file,
-            )
+        client.fput_object(
+            "profiles",
+            image_name,
+            image_path,
+        )
         logging.info(f"Image '{image_name}' uploaded successfully to bucket 'profiles'.")
     except S3Error as e:
         logging.error(f"Error uploading image '{image_name}': {e}")
